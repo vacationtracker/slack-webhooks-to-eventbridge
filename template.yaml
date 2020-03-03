@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Generic Webhook to EventBridge event bus
+
+Globals:
+  Function:
+    Timeout: 29
+    Runtime: nodejs12.x
+    Tracing: Active
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: slack-webhooks-to-eventbridge
+    Description: "A serverless application that handles Slack webhook events, sends the raw event data to the EventBridge, and replies back to Slack with a valid response"
+    Author: Slobodan
+    SpdxLicenseId: MIT
+    LicenseUrl: LICENSE
+    ReadmeUrl: README.md
+    Labels: ['slack','events','commands','webhook','eventbridge','event','bridge']
+    HomePageUrl: https://github.com/vacationtracker/slack-webhooks-to-eventbridge
+    SemanticVersion: 1.0.0
+    SourceCodeUrl: https://github.com/vacationtracker/slack-webhooks-to-eventbridge
+
+Parameters:
+  EventBusName:
+    Type: String
+    Description: The name of the EventBridge Event Bus
+  LambdaProvisionedConcurrency:
+    Type: Number
+    Description: Reserved Concurrency for Webhook Lambda function
+    Default: 0
+  LambdaAlias:
+    Type: String
+    Description: An alias for the Lambda function
+    Default: live
+
+Conditions:
+  ProvisionedConcurrencyIsTurnedOff: !Equals [0, !Ref LambdaProvisionedConcurrency]
+
+Resources:
+  SlackWebhookApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+
+  SlackWebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/slack-webhook
+      Handler: lambda.handler
+      ProvisionedConcurrencyConfig:
+        Fn::If:
+          - ProvisionedConcurrencyIsTurnedOff
+          - !Ref AWS::NoValue
+          - ProvisionedConcurrentExecutions: !Ref LambdaProvisionedConcurrency
+      AutoPublishAlias: !Ref LambdaAlias
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !Ref EventBusName
+          EVENT_SOURCE: 'slack-webhook'
+      Policies:
+        -
+          Version: 2012-10-17
+          Statement:
+            -
+              Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: '*'
+      Events:
+        WebhookPost:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: POST
+            ApiId: !Ref SlackWebhookApi
+        WebhookGet:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: GET
+            ApiId: !Ref SlackWebhookApi
+
+Outputs:
+  SlackWebhookApiUrl:
+    Description: "A webhook URL"
+    Value: !Sub "https://${SlackWebhookApi}.execute-api.${AWS::Region}.amazonaws.com"
+
+  SlackWebhookApiId:
+    Description: "An ID of the API Gateway HTTP API"
+    Value: !Ref SlackWebhookApi
