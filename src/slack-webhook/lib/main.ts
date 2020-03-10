@@ -21,18 +21,27 @@ export async function sendWebhookEvent(event: APIGatewayProxyEvent, notification
     const eventCopy: IEvent = Object.assign({}, event)
     let body = event.body
 
+    // Decode base64 encoded body
     if (body && event.isBase64Encoded) {
       body = Buffer.from(body, 'base64').toString('utf8')
     }
 
+    // Parse the body if it's a valid JSON
     if (body && /^application\/json($|;)/.test(eventCopy.headers['Content-Type'])) {
       eventCopy.body = JSON.parse(body)
     }
 
+    // Parse the body if it's a url encoded string
     if (body && /^application\/x-www-form-urlencoded($|;)/.test(eventCopy.headers['Content-Type'])) {
       eventCopy.body = querystring.parse(body)
     }
 
+    // Handle click on block actions
+    if (eventCopy.body && typeof eventCopy.body === 'object' && eventCopy.body.payload && typeof eventCopy.body.payload === 'string') {
+      eventCopy.body.payload = JSON.parse(eventCopy.body.payload)
+    }
+
+    // Answer challenge for the Slack event subscription
     if (eventCopy.body && typeof eventCopy.body === 'object' && eventCopy.body.type === 'url_verification') {
       return eventCopy.body.challenge
     }

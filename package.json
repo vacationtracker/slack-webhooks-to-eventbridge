@@ -1,6 +1,6 @@
 {
   "name": "slack-webhooks-to-eventbridge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Slack Webhooks to EventBridge event bus.",
   "main": "jest.config.js",
   "scripts": {
