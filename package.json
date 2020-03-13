@@ -1,6 +1,6 @@
 {
   "name": "slack-webhooks-to-eventbridge",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Slack Webhooks to EventBridge event bus.",
   "main": "jest.config.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "author": "Slobodan Stojanović <slobodan@cloudhorizon.com> (http://slobodan.me)",
   "license": "MIT",
   "dependencies": {
-    "@types/aws-lambda": "^8.10.36",
+    "@types/aws-lambda": "^8.10.46",
     "@types/node": "^13.7.7",
     "aws-lambda": "^1.0.5"
   },

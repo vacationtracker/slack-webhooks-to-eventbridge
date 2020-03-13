@@ -221,6 +221,110 @@ describe('Send webhook event', () => {
       expect(notificationMock.send).not.toHaveBeenCalled()
     })
 
+    it('should parse slash command', async () => {
+      const notificationMock = {
+        send: jest.fn(),
+      }
+      const ApiGwJson = {
+        version: '2.0',
+        routeKey: 'POST /',
+        rawPath: '/',
+        rawQueryString: '',
+        headers: {
+          accept: 'application/json,*/*',
+          'accept-encoding': 'gzip,deflate',
+          'content-length': '488',
+          'content-type': 'application/x-www-form-urlencoded',
+          host: 'a12b3cd4ef.execute-api.us-east-1.amazonaws.com',
+          'user-agent': 'Slackbot 1.0 (+https://api.slack.com/robots)',
+          'x-amzn-trace-id': 'Root=1-2bcd3456-b9c74d1681859b4e2a6969db',
+          'x-forwarded-for': '1.2.3.4',
+          'x-forwarded-port': '443',
+          'x-forwarded-proto': 'https',
+          'x-slack-request-timestamp': '1583309715',
+          'x-slack-signature': 'v0=12a345678b3819c4986cadaa83e9d2a9afb014ff7d6784634dc11456141cfc6',
+        },
+        requestContext: {
+          accountId: '123456789012',
+          apiId: 'a12b3cd4ef',
+          domainName: 'a12b3cd4ef.execute-api.us-east-1.amazonaws.com',
+          domainPrefix: 'a12b3cd4ef',
+          http: {
+            method: 'POST',
+            path: '/',
+            protocol: 'HTTP/1.1',
+            sourceIp: '54.91.215.122',
+            userAgent: 'Slackbot 1.0 (+https://api.slack.com/robots)',
+          },
+          requestId: 'I2x_DgBeoAMEMFA=',
+          routeId: null,
+          routeKey: 'POST /',
+          stage: '$default',
+          time: '13/Mar/2020:14:15:45 +0000',
+          timeEpoch: 1584108945690,
+        },
+        body: 'Y2hhbm5lbF9pZD1DQTFCQzJERUYmY2hhbm5lbF9uYW1lPWNoYW5uZWwmY29tbWFuZD0lMkZ0ZXN0Y29tbWFuZCZyZXNwb25zZV91cmw9aHR0cHMlM0ElMkYlMkZob29rcy5zbGFjay5jb20lMkZjb21tYW5kcyUyRlQxQUJDMjM0RCUyRjEyMzQ1Njc4OTAxMiUyRmFLVHZDWDMwbjVwWHlOZktqU1RhaXI5MCZ0ZWFtX2RvbWFpbj1jbG91ZGhvcml6b24tdGVzdCZ0ZWFtX2lkPVQxQUJDMjM0RCZ0ZXh0PSZ0b2tlbj1PYWJjMWRlRkdoaUpLTDJtM09QNFFyUzUmdHJpZ2dlcl9pZD0xMjM0NTY3ODkwMTIuMjk2ODM0MjcyMTk3LmIzMDJkZjczYzdmYWExYmJhMmU5NDNjMDM5NDJhYTQ3JnVzZXJfaWQ9VTFBQkNEMjNFJnVzZXJfbmFtZT1zbG9ib2Rhbg',
+        isBase64Encoded: true,
+      }
+
+      const result = await sendWebhookEvent(ApiGwJson, notificationMock)
+      expect(result).toBeNull()
+      expect(notificationMock.send).toHaveBeenCalledTimes(1)
+      expect(notificationMock.send).toHaveBeenCalledWith({
+        body: {
+          channel_id: 'CA1BC2DEF',
+          channel_name: 'channel',
+          command: '/testcommand',
+          response_url: 'https://hooks.slack.com/commands/T1ABC234D/123456789012/aKTvCX30n5pXyNfKjSTair90',
+          team_domain: 'cloudhorizon-test',
+          team_id: 'T1ABC234D',
+          text: '',
+          token: 'Oabc1deFGhiJKL2m3OP4QrS5',
+          trigger_id: '123456789012.296834272197.b302df73c7faa1bba2e943c03942aa47',
+          user_id: 'U1ABCD23E',
+          user_name: 'slobodan',
+        },
+        headers: {
+          'content-length': '488',
+          'content-type': 'application/x-www-form-urlencoded',
+          host: 'a12b3cd4ef.execute-api.us-east-1.amazonaws.com',
+          'user-agent': 'Slackbot 1.0 (+https://api.slack.com/robots)',
+          'x-amzn-trace-id': 'Root=1-2bcd3456-b9c74d1681859b4e2a6969db',
+          'x-forwarded-for': '1.2.3.4',
+          'x-forwarded-port': '443',
+          'x-forwarded-proto': 'https',
+          'x-slack-request-timestamp': '1583309715',
+          'x-slack-signature': 'v0=12a345678b3819c4986cadaa83e9d2a9afb014ff7d6784634dc11456141cfc6',
+          accept: 'application/json,*/*',
+          'accept-encoding': 'gzip,deflate',
+        },
+        version: '2.0',
+        routeKey: 'POST /',
+        rawPath: '/',
+        rawQueryString: '',
+        isBase64Encoded: true,
+        requestContext: {
+          accountId: '123456789012',
+          apiId: 'a12b3cd4ef',
+          domainName: 'a12b3cd4ef.execute-api.us-east-1.amazonaws.com',
+          domainPrefix: 'a12b3cd4ef',
+          http: {
+            method: 'POST',
+            path: '/',
+            protocol: 'HTTP/1.1',
+            sourceIp: '54.91.215.122',
+            userAgent: 'Slackbot 1.0 (+https://api.slack.com/robots)',
+          },
+          requestId: 'I2x_DgBeoAMEMFA=',
+          routeId: null,
+          routeKey: 'POST /',
+          stage: '$default',
+          time: '13/Mar/2020:14:15:45 +0000',
+          timeEpoch: 1584108945690,
+        },
+      })
+    })
+
     it('should parse Slack action event', async () => {
       const notificationMock = {
         send: jest.fn(),

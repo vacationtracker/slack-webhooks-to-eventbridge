@@ -16,7 +16,7 @@ interface IEvent extends APIGatewayProxyEventWithoutBody {
   }
 }
 
-export async function sendWebhookEvent(event: APIGatewayProxyEvent, notification: INotificationRepository) {
+export async function sendWebhookEvent(event: any, notification: INotificationRepository) {
   try {
     const eventCopy: IEvent = Object.assign({}, event)
     let body = event.body
@@ -26,15 +26,18 @@ export async function sendWebhookEvent(event: APIGatewayProxyEvent, notification
       body = Buffer.from(body, 'base64').toString('utf8')
     }
 
+    const contentType = eventCopy.headers['Content-Type'] || eventCopy.headers['content-type']
+
     // Parse the body if it's a valid JSON
-    if (body && /^application\/json($|;)/.test(eventCopy.headers['Content-Type'])) {
+    if (body && /^application\/json($|;)/.test(contentType)) {
       eventCopy.body = JSON.parse(body)
     }
 
     // Parse the body if it's a url encoded string
-    if (body && /^application\/x-www-form-urlencoded($|;)/.test(eventCopy.headers['Content-Type'])) {
+    if (body && /^application\/x-www-form-urlencoded($|;)/.test(contentType)) {
       eventCopy.body = querystring.parse(body)
     }
+
 
     // Handle click on block actions
     if (eventCopy.body && typeof eventCopy.body === 'object' && eventCopy.body.payload && typeof eventCopy.body.payload === 'string') {

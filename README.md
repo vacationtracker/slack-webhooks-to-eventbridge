@@ -37,7 +37,7 @@ GenericWebhookToSns:
   Properties:
     Location:
       ApplicationId: arn:aws:serverlessrepo:us-east-1:721177882564:applications/slack-webhooks-to-eventbridge
-      SemanticVersion: 1.0.0
+      SemanticVersion: 1.1.1
     Parameters:
       EventBusName: Name of your EventBus
 ```
@@ -90,7 +90,7 @@ Resources:
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:721177882564:applications/slack-webhooks-to-eventbridge
-        SemanticVersion: 1.0.0
+        SemanticVersion: 1.1.1
       Parameters:
         EventBusName: SlackEventBus
             
@@ -114,7 +114,7 @@ Resources:
 Outputs:
   SlackWebhookUrl:
     Description: "Webhook URL"
-    Value: !GetAtt SlackWebhooks.Outputs.WebhookApiUrl
+    Value: !GetAtt SlackWebhooks.Outputs.SlackWebhookApiUrl
 ```
 
 
