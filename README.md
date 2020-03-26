@@ -14,6 +14,14 @@ This app contains the following components:
 2. _Webhooks Lambda Function_ that we use to process the request, send it to the EventBridge event bus, and immediately return the response to the API Gateway and Slack.
 3. _Slack Auth Lambda Function_ that handles Slack auth redirects, requests token from Slack, publishes token to the EventBridge event bus, and redirects user to the provided landing page.
 
+## Resources
+
+Tutorials:
+
+- [Build Slack Home Tab in minutes using AWS Lambda and Amazon EventBridge](https://vacationtracker.io/blog/build-slack-home-tab-with-aws-lambda-and-eventbridge/)
+
+Serverless Application Repository app is available [here](https://serverlessrepo.aws.amazon.com/applications/arn:aws:serverlessrepo:us-east-1:721177882564:applications~slack-webhooks-to-eventbridge).
+
 ## Deploy and use the application
 
 You can deploy this app from Serverless Application Repository (SAR) or manually, using the Serverless Application Model Command Line Interface (SAM CLI).
