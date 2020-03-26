@@ -25,6 +25,18 @@ Parameters:
   EventBusName:
     Type: String
     Description: The name of the EventBridge Event Bus
+  SlackClientId:
+    Type: String
+    Description: The client_id issued when you created your app
+    Default: ''
+  SlackClientSecret:
+    Type: String
+    Description: The client_secret issued when you created your app
+    Default: ''
+  SlackRedirectUri:
+    Type: String
+    Description: The redirect_uri must match the originally submitted URI
+    Default: 'https://vacationtracker.io'
   LambdaProvisionedConcurrency:
     Type: Number
     Description: Reserved Concurrency for Webhook Lambda function
@@ -42,6 +54,35 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: $default
+
+  SlackAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/slack-auth
+      Handler: lambda.handler
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !Ref EventBusName
+          EVENT_SOURCE: 'slack-webhook'
+          SLACK_CLIENT_ID: !Ref SlackClientId
+          SLACK_CLIENT_SECRET: !Ref SlackClientSecret
+          SLACK_REDIRECT_URL: !Ref SlackRedirectUri
+      Policies:
+        -
+          Version: 2012-10-17
+          Statement:
+            -
+              Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: '*'
+      Events:
+        AuthGet:
+          Type: HttpApi
+          Properties:
+            Path: /auth
+            Method: GET
+            ApiId: !Ref SlackWebhookApi
 
   SlackWebhookFunction:
     Type: AWS::Serverless::Function
@@ -83,8 +124,12 @@ Resources:
 
 Outputs:
   SlackWebhookApiUrl:
-    Description: "A webhook URL"
+    Description: "A Slack webhook URL"
     Value: !Sub "https://${SlackWebhookApi}.execute-api.${AWS::Region}.amazonaws.com"
+
+  SlackRedirectUrl:
+    Description: "A Slack auth/redirect URL"
+    Value: !Sub "https://${SlackWebhookApi}.execute-api.${AWS::Region}.amazonaws.com/auth"
 
   SlackWebhookApiId:
     Description: "An ID of the API Gateway HTTP API"

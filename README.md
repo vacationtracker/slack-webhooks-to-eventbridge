@@ -10,8 +10,9 @@ The architecture for this app looks like the following diagram:
 
 This app contains the following components:
 
-1. _An API Gateway HTTP API endpoint_ -  a new API Gateway HTTP API is cheaper and less powerful than the REST API, but it has everything we need for the common webhook.
-2. _A Lambda Function_ - that we use to process the request, send it to the EventBridge event bus, and immediately return the response to the API Gateway and Slack.
+1. _An API Gateway HTTP API endpoint_ a new API Gateway HTTP API is cheaper and less powerful than the REST API, but it has everything we need for the common webhook.
+2. _Webhooks Lambda Function_ that we use to process the request, send it to the EventBridge event bus, and immediately return the response to the API Gateway and Slack.
+3. _Slack Auth Lambda Function_ that handles Slack auth redirects, requests token from Slack, publishes token to the EventBridge event bus, and redirects user to the provided landing page.
 
 ## Deploy and use the application
 
@@ -63,6 +64,14 @@ The first command will build the source of your application. The second command 
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
+### SAR outputs and URLs you can use with Slack
+
+The SAR application will output the following:
+
+- `SlackWebhookApiUrl` represents a Slack webhook URL. You can use this URL for Slack slash commands, events, and interactive components.
+- `SlackRedirectUrl` represents a Slack auth URL. You can use this URL as Slack redirect URL.
+- `SlackWebhookApiId` is the AWS API Gateway HTTP API ID.
+
 ### Use with SAM
 
 You can use Generic webhook to SNS topic application in your SAM application by adding it as a nested app in your SAM template.
@@ -90,7 +99,7 @@ Resources:
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:721177882564:applications/slack-webhooks-to-eventbridge
-        SemanticVersion: 1.1.1
+        SemanticVersion: 1.2.0
       Parameters:
         EventBusName: SlackEventBus
             
@@ -100,7 +109,7 @@ Resources:
       CodeUri: build/app-home-tab
       Handler: lambda.handler
       Events:
-        OnChargeSucceeded:
+        OnAppHomeOpened:
           Type: CloudWatchEvent
           Properties:
             EventBusName: SlackEventBus
@@ -108,8 +117,23 @@ Resources:
               detail:
                 body:
                   event:
-                  	type:
-	                  - app_home_opened
+                    type:
+                    - app_home_opened
+                    
+  SlackAuthEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/slack-auth
+      Handler: lambda.handler
+      Events:
+        OnSlackAuth:
+          Type: CloudWatchEvent
+          Properties:
+            EventBusName: SlackEventBus
+            Pattern:
+              detail:
+                type:
+                - slack-auth
 
 Outputs:
   SlackWebhookUrl:
@@ -135,7 +159,7 @@ In production, you should consider adding a few more things, such as:
 
 The event will have the following structure:
 
-```json
+```javascript
 {
     "version": "0",
     "id": "12345678-1a2b-3c4d-5e6f-123456789abc",
@@ -150,6 +174,51 @@ The event will have the following structure:
     }
 }
 ```
+
+For Slack auth, your EventBridge event bus will receive the event with the following structure:
+
+```javascript
+{
+    "version": "0",
+    "id": "12345678-1a2b-3c4d-5e6f-123456789abc",
+    "detail-type": "Webhook, source: webhook",
+    "source": "webhook",
+    "account": "123456789012",
+    "time": "2019-12-27T19:24:48Z",
+    "region": "us-east-1",
+    "resources": [],
+    "detail": {
+        "type": "slack-auth",
+        "payload": {
+            // A JSON response from "https://slack.com/api/oauth.access".
+            // For example:
+            "access_token": "xoxp-XXXXXXXX-XXXXXXXX-XXXXX",
+            "scope": "incoming-webhook,commands,bot",
+            "team_name": "Team Installing Your Hook",
+            "team_id": "XXXXXXXXXX",
+            "incoming_webhook": {
+                "url": "https://hooks.slack.com/TXXXXX/BXXXXX/XXXXXXXXXX",
+                "channel": "#channel-it-will-post-to",
+                "configuration_url": "https://teamname.slack.com/services/BXXXXX"
+            },
+            "bot":{
+                "bot_user_id":"UTTTTTTTTTTR",
+                "bot_access_token":"xoxb-XXXXXXXXXXXX-TTTTTTTTTTTTTT"
+            }
+      }
+    }
+}
+```
+
+## Roadmap
+
+- [x] Handle Slack events
+- [x] Handle Slack dialogs
+- [x] Handle Slack slash commands and message actions
+- [x] Handle Slack auth, and redirect to the selected landing page after the request is done
+- [ ] Add support for the custom domains
+- [ ] Add Slack event validation
+- [ ] Create multiple tutorials
 
 ## License
 

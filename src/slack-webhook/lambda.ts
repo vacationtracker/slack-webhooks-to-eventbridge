@@ -1,11 +1,11 @@
 // Allow CloudWatch to read source maps
 import 'source-map-support/register'
 
-import { APIGatewayProxyEvent } from 'aws-lambda'
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { EventBridgeRepository } from '../common/event-bridge-repository'
 import { sendWebhookEvent } from './lib/main'
 
-export async function handler(event: APIGatewayProxyEvent) {
+export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
   console.log('event: ', JSON.stringify(event))
 
   const eventBusName = process.env.EVENT_BUS_NAME
@@ -24,6 +24,6 @@ export async function handler(event: APIGatewayProxyEvent) {
 
   return {
     statusCode: body ? 200 : 204,
-    body: body ? JSON.stringify(body) : null,
+    body: body ? JSON.stringify(body) : '',
   }
 }
