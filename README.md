@@ -223,3 +223,7 @@ For Slack auth, your EventBridge event bus will receive the event with the follo
 ## License
 
 MIT, see [LICENSE](./LICENSE).
+
+------
+
+[![Built by Vacation Tracker team](./assets/by-vacation-tracker-team.png)](https://vacationtracker.io?ref=github-os)
