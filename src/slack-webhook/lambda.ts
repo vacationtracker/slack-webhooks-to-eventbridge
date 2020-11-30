@@ -24,6 +24,9 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   return {
     statusCode: body ? 200 : 204,
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: body ? JSON.stringify(body) : '',
   }
 }

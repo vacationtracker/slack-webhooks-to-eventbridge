@@ -51,6 +51,19 @@ export async function sendWebhookEvent(event: any, notification: INotificationRe
 
     await notification.send(eventCopy)
 
+    if (eventCopy.body && typeof eventCopy.body === 'object' && eventCopy.body.payload && typeof eventCopy.body.payload === 'object' && eventCopy.body.payload.type === 'view_submission') {
+      try {
+        const privateMetadata = JSON.parse(eventCopy.body.payload.view.private_metadata)
+
+        console.log('privateMetadata', privateMetadata)
+        if (privateMetadata.response) {
+          return privateMetadata.response
+        }
+      } catch (error) {
+        return null
+      }
+    }
+
     return null
   } catch (err) {
     await notification.send(event)
